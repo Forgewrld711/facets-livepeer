@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Facets — a multimodal listening instrument</title>
+  <meta name="description" content="Turn sound into a provenance-labelled visual world, then navigate what changed in translation.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23081422' d='M32 2 57 18 50 50 32 62 10 48 6 21z'/%3E%3Cpath fill='%234de8ff' d='m32 8 18 13-9 29-25-6-4-20z'/%3E%3Cpath fill='%23ff4fc8' d='m32 8 9 42 9-29z'/%3E%3C/svg%3E">
+  <style>
+    :root{color-scheme:dark;--ink:#eefaff;--muted:#8aa4b7;--cyan:#4de8ff;--pink:#ff4fc8;--line:rgba(136,221,255,.17);--panel:rgba(5,13,24,.72)}
+    *{box-sizing:border-box} body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 38%,#102848 0,#050913 34%,#020409 72%);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,sans-serif;overflow-x:hidden}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(to bottom,transparent,black 28%,transparent 95%);opacity:.22}
+    main{width:min(1180px,calc(100% - 32px));margin:auto;padding:24px 0 32px}
+    header{display:flex;justify-content:space-between;align-items:center;gap:16px}.brand{font-size:1rem;font-weight:800;letter-spacing:.28em}.brand i{font-style:normal;color:var(--cyan)}.status{font-size:.78rem;text-transform:uppercase;letter-spacing:.14em;color:#9fffd1}.status:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#6dffb3;margin-right:8px;box-shadow:0 0 14px #6dffb3}
+    .workspace{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;margin-top:24px}.stage,.side{border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(18px);border-radius:24px}.stage{position:relative;min-height:620px;overflow:hidden;display:grid;place-items:center}.stage:after{content:"MEASURE → TRANSFORM → RETURN";position:absolute;top:20px;left:24px;font:700 .74rem/1 ui-monospace,monospace;letter-spacing:.17em;color:var(--muted)}
+    .prism{--pulse:.2;--bright:.7;--drift:0;position:relative;width:min(88%,760px);aspect-ratio:16/9;display:grid;place-items:center;transform:translateX(calc(var(--drift) * 28px)) scale(calc(1 + var(--pulse) * .035));transition:transform .12s linear}.prism img{width:100%;height:100%;object-fit:contain;filter:saturate(calc(1.05 + var(--bright) * .45)) contrast(1.08) brightness(calc(.78 + var(--bright) * .4));mix-blend-mode:screen}.prism:before{content:"";position:absolute;inset:17% 25%;border-radius:50%;background:radial-gradient(circle,rgba(77,232,255,calc(.12 + var(--pulse) * .35)),rgba(255,79,200,.1) 42%,transparent 70%);filter:blur(28px)}
+    .spectrum{position:absolute;inset:auto 12% 19%;height:64px;display:flex;align-items:flex-end;justify-content:center;gap:4px;opacity:.72;mask-image:linear-gradient(90deg,transparent,black 15%,black 85%,transparent)}.spectrum i{display:block;width:7px;height:calc(7px + var(--h, .2) * 54px);background:linear-gradient(var(--pink),var(--cyan));border-radius:9px;box-shadow:0 0 10px rgba(77,232,255,.3);transition:height .1s linear}
+    .drop{position:absolute;bottom:24px;left:24px;right:24px;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:15px 16px;border:1px dashed rgba(136,221,255,.34);border-radius:16px;background:rgba(2,8,16,.82)}.drop.is-over{border-color:var(--cyan);box-shadow:0 0 24px rgba(77,232,255,.16)}.drop strong{display:block;font-size:.95rem}.drop span{display:block;margin-top:3px;color:var(--muted);font-size:.78rem}.actions{display:flex;gap:8px;align-items:center}button{border:0;border-radius:999px;padding:12px 18px;background:linear-gradient(110deg,var(--cyan),#73aaff 55%,var(--pink));color:#03101a;font-weight:850;cursor:pointer;white-space:nowrap}button.secondary{color:var(--ink);background:#102236;border:1px solid var(--line)}button:focus-visible{outline:2px solid white;outline-offset:3px}audio{width:220px;height:36px;display:none}audio.ready{display:block}
+    .side{padding:22px;display:flex;flex-direction:column}.side h1{margin:4px 0 8px;font-size:clamp(1.75rem,3vw,2.5rem);line-height:.98;letter-spacing:-.04em}.side>p{margin:0 0 20px;color:var(--muted);font-size:.94rem;line-height:1.5}.readings{display:grid;gap:10px}.reading{padding:14px;border:1px solid var(--line);border-radius:15px;background:rgba(7,19,34,.6)}.reading label{display:flex;justify-content:space-between;color:var(--muted);font-size:.76rem;text-transform:uppercase;letter-spacing:.12em}.reading b{color:var(--ink);font-size:.8rem}.track{height:4px;background:#162739;border-radius:10px;margin-top:10px;overflow:hidden}.track i{display:block;height:100%;width:var(--v);background:linear-gradient(90deg,var(--cyan),var(--pink));box-shadow:0 0 10px var(--cyan)}
+    .chain{margin-top:auto;padding-top:22px}.chain h2{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}.step{display:grid;grid-template-columns:24px 1fr;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:.84rem}.step em{font-style:normal;color:var(--cyan);font-family:ui-monospace,monospace}.step small{display:block;color:var(--muted);margin-top:3px}.foot{margin-top:18px;color:#6f879a;font-size:.72rem;line-height:1.45}
+    @media(max-width:840px){.workspace{grid-template-columns:1fr}.stage{min-height:500px}.side{min-height:520px}}@media(max-width:520px){main{width:min(100% - 20px,1180px);padding-top:16px}.stage{min-height:480px}.drop{flex-direction:column;align-items:stretch}.actions{flex-direction:column}.drop button,.drop audio{width:100%}.status{display:none}}
+  </style>
+</head>
+<body>
+<main>
+  <header><div class="brand">FACETS <i>/ 01</i></div><div class="status">provenance intact</div></header>
+  <section class="workspace">
+    <div class="stage">
+      <div class="prism" id="prism"><img src="https://v3b.fal.media/files/b/0aaa4da6/ihj5uFPfjrSeX8Meq9Ft9.jpg" alt="A luminous cyan and magenta crystal suspended in darkness"><div class="spectrum" id="spectrum" aria-hidden="true"></div></div>
+      <div class="drop" id="drop"><div><strong id="sound-name">Give the instrument a sound</strong><span id="sound-note">Audio stays on this device during measurement.</span></div><div class="actions"><audio id="player" controls></audio><button class="secondary" id="demo" type="button">Play calibration</button><button id="choose" type="button">Choose audio</button></div><input id="file" type="file" accept="audio/*" hidden></div>
+    </div>
+    <aside class="side">
+      <h1>What did the sound become?</h1>
+      <p>Each pass shows what was measured, what was generated, and what the translation could not carry.</p>
+      <div class="readings">
+        <div class="reading"><label>Pulse <b id="pulse-label">low</b></label><div class="track"><i id="pulse-track" style="--v:32%"></i></div></div>
+        <div class="reading"><label>Density <b id="density-label">sparse</b></label><div class="track"><i id="density-track" style="--v:22%"></i></div></div>
+        <div class="reading"><label>Brightness <b id="brightness-label">high edge</b></label><div class="track"><i id="brightness-track" style="--v:76%"></i></div></div>
+        <div class="reading"><label>Drift <b id="drift-label">left → right</b></label><div class="track"><i id="drift-track" style="--v:64%"></i></div></div>
+      </div>
+      <div class="chain"><h2>Translation record</h2><div class="step"><em>01</em><div>Listening Glass<small>measured features, not simulated hearing</small></div></div><div class="step"><em>02</em><div>Livepeer Agent<small>generated visual world from labelled measures</small></div></div><div class="step"><em>03</em><div>Elsehow<small>waiting to return the image as spatial sound</small></div></div></div>
+      <div class="foot">Calibration image generated with Livepeer Agent · FLUX Schnell · $0.0032</div>
+    </aside>
+  </section>
+</main>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const prism = $('prism'), spectrum = $('spectrum'), drop = $('drop'), file = $('file'), player = $('player');
+  const bars = Array.from({length:36}, () => { const i=document.createElement('i'); spectrum.appendChild(i); return i; });
+  const labels = {pulse:$('pulse-label'),density:$('density-label'),brightness:$('brightness-label'),drift:$('drift-label')};
+  const tracks = {pulse:$('pulse-track'),density:$('density-track'),brightness:$('brightness-track'),drift:$('drift-track')};
+  let ctx, analyser, source, frame, data;
+  const word = (v, kind) => kind==='drift' ? (v<.42?'right → left':v>.58?'left → right':'centered') : v<.3?'low':v<.68?'mid':'high';
+  function render(m){
+    Object.keys(tracks).forEach(k=>{ const v=Math.max(0,Math.min(1,m[k])); tracks[k].style.setProperty('--v',`${Math.round(v*100)}%`); labels[k].textContent=word(v,k); });
+    prism.style.setProperty('--pulse',m.pulse); prism.style.setProperty('--bright',m.brightness); prism.style.setProperty('--drift',m.drift*2-1);
+  }
+  function animate(){
+    analyser.getByteFrequencyData(data); const n=data.length; let low=0,mid=0,high=0,active=0;
+    for(let i=0;i<n;i++){const v=data[i]/255;if(i<n*.12)low+=v/(n*.12);else if(i<n*.5)mid+=v/(n*.38);else high+=v/(n*.5);if(v>.12)active++;}
+    const pulse=Math.min(1,low*1.5), density=active/n, brightness=Math.min(1,(mid*.35+high*.9));
+    render({pulse,density,brightness,drift:.5});
+    bars.forEach((bar,i)=>bar.style.setProperty('--h',data[Math.floor(i*n/bars.length)]/255));
+    frame=requestAnimationFrame(animate);
+  }
+  async function loadAudio(f){
+    if(!f || !f.type.startsWith('audio/')) return;
+    if(frame) cancelAnimationFrame(frame);
+    player.src=URL.createObjectURL(f); player.classList.add('ready'); $('choose').textContent='Replace'; $('demo').hidden=true;
+    $('sound-name').textContent=f.name; $('sound-note').textContent='Local measurement · raw audio never leaves this device';
+    ctx ||= new AudioContext(); source ||= ctx.createMediaElementSource(player); analyser ||= ctx.createAnalyser(); analyser.fftSize=256; source.connect(analyser); analyser.connect(ctx.destination); data=new Uint8Array(analyser.frequencyBinCount);
+    await ctx.resume(); await player.play(); animate();
+  }
+  $('choose').onclick=()=>file.click(); file.onchange=()=>loadAudio(file.files[0]);
+  ['dragenter','dragover'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.add('is-over')}));
+  ['dragleave','drop'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.remove('is-over')}));
+  drop.addEventListener('drop',e=>loadAudio(e.dataTransfer.files[0]));
+  $('demo').onclick=()=>{
+    $('sound-name').textContent='Facets calibration / synthetic measures'; $('sound-note').textContent='Provenance: labelled demo values · no raw source claimed';
+    const start=performance.now(); cancelAnimationFrame(frame);
+    const loop=(t)=>{const q=(t-start)/1000;const m={pulse:.28+.18*Math.max(0,Math.sin(q*3.1)),density:.22+.07*Math.sin(q*.7),brightness:.72+.12*Math.sin(q*1.2),drift:.5+.38*Math.sin(q*.35)};render(m);bars.forEach((b,i)=>b.style.setProperty('--h',Math.max(.08,.18+.4*Math.sin(q*2+i*.34)*Math.sin(i*.17))));frame=requestAnimationFrame(loop)};frame=requestAnimationFrame(loop);
+  };
+  const mc=document.modelContext;
+  if(mc?.registerTool){
+    const clamp=n=>Math.max(0,Math.min(1,Number(n)));
+    void Promise.resolve(mc.registerTool({name:'apply_audio_measurement',title:'Apply audio measurement',description:'Apply provenance-labelled normalized audio measurements to the visible Facets instrument.',inputSchema:{type:'object',properties:{pulse:{type:'number',minimum:0,maximum:1},density:{type:'number',minimum:0,maximum:1},brightness:{type:'number',minimum:0,maximum:1},drift:{type:'number',minimum:0,maximum:1},source_label:{type:'string'}},required:['pulse','density','brightness','drift'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute(input){const m={pulse:clamp(input.pulse),density:clamp(input.density),brightness:clamp(input.brightness),drift:clamp(input.drift)};render(m);$('sound-name').textContent=input.source_label||'Structured measurement';$('sound-note').textContent='Provenance: agent-supplied measures · raw audio not claimed';return {applied:true,measurements:m};}})).catch(()=>{});
+  }
+})();
+</script>
+</body>
+</html>
