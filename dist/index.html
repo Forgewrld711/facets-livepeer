@@ -18,7 +18,9 @@
     .drop{position:absolute;bottom:24px;left:24px;right:24px;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:15px 16px;border:1px dashed rgba(136,221,255,.34);border-radius:16px;background:rgba(2,8,16,.82)}.drop.is-over{border-color:var(--cyan);box-shadow:0 0 24px rgba(77,232,255,.16)}.drop strong{display:block;font-size:.95rem}.drop span{display:block;margin-top:3px;color:var(--muted);font-size:.78rem}.actions{display:flex;gap:8px;align-items:center}button{border:0;border-radius:999px;padding:12px 18px;background:linear-gradient(110deg,var(--cyan),#73aaff 55%,var(--pink));color:#03101a;font-weight:850;cursor:pointer;white-space:nowrap}button.secondary{color:var(--ink);background:#102236;border:1px solid var(--line)}button:focus-visible{outline:2px solid white;outline-offset:3px}audio{width:220px;height:36px;display:none}audio.ready{display:block}
     .side{padding:22px;display:flex;flex-direction:column}.side h1{margin:4px 0 8px;font-size:clamp(1.75rem,3vw,2.5rem);line-height:.98;letter-spacing:-.04em}.side>p{margin:0 0 20px;color:var(--muted);font-size:.94rem;line-height:1.5}.readings{display:grid;gap:10px}.reading{padding:14px;border:1px solid var(--line);border-radius:15px;background:rgba(7,19,34,.6)}.reading label{display:flex;justify-content:space-between;color:var(--muted);font-size:.76rem;text-transform:uppercase;letter-spacing:.12em}.reading b{color:var(--ink);font-size:.8rem}.track{height:4px;background:#162739;border-radius:10px;margin-top:10px;overflow:hidden}.track i{display:block;height:100%;width:var(--v);background:linear-gradient(90deg,var(--cyan),var(--pink));box-shadow:0 0 10px var(--cyan)}
     .chain{margin-top:auto;padding-top:22px}.chain h2{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}.step{display:grid;grid-template-columns:24px 1fr;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:.84rem}.step em{font-style:normal;color:var(--cyan);font-family:ui-monospace,monospace}.step small{display:block;color:var(--muted);margin-top:3px}.foot{margin-top:18px;color:#6f879a;font-size:.72rem;line-height:1.45}
-    @media(max-width:840px){.workspace{grid-template-columns:1fr}.stage{min-height:500px}.side{min-height:520px}}@media(max-width:520px){main{width:min(100% - 20px,1180px);padding-top:16px}.stage{min-height:480px}.drop{flex-direction:column;align-items:stretch}.actions{flex-direction:column}.drop button,.drop audio{width:100%}.status{display:none}}
+    .console{margin-top:22px;border:1px solid var(--line);background:rgba(4,11,20,.8);backdrop-filter:blur(18px);border-radius:24px;padding:22px;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px}.console h2{margin:0 0 7px;font-size:1.05rem;letter-spacing:-.02em}.console p{margin:0;color:var(--muted);font-size:.84rem;line-height:1.5}.prompt-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-top:16px}.prompt-row input{width:100%;border:1px solid var(--line);border-radius:999px;background:#071321;color:var(--ink);padding:13px 17px;font:inherit}.prompt-row input::placeholder{color:#668197}.prompt-row input:focus{outline:2px solid rgba(77,232,255,.55);outline-offset:2px}.prompt-row button[disabled]{cursor:wait;filter:grayscale(.35);opacity:.68}.loop-status{min-height:21px;margin-top:11px!important;color:#9fffd1!important}.loop-status.error{color:#ff94cd!important}.receipt{border-left:1px solid var(--line);padding-left:22px;display:grid;align-content:start;gap:9px}.receipt h3{margin:0;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}.receipt dl{margin:0;display:grid;grid-template-columns:86px 1fr;gap:6px 10px;font-size:.76rem;line-height:1.35}.receipt dt{color:#6f879a}.receipt dd{margin:0;overflow-wrap:anywhere}.receipt .verified{color:#9fffd1}.receipt a{color:var(--cyan)}
+    .prism img{transition:opacity .35s ease,filter .35s ease}.prism.generating img{opacity:.38;filter:saturate(.6) blur(1px)}
+    @media(max-width:840px){.workspace{grid-template-columns:1fr}.stage{min-height:500px}.side{min-height:520px}.console{grid-template-columns:1fr}.receipt{border-left:0;border-top:1px solid var(--line);padding:18px 0 0}}@media(max-width:520px){main{width:min(100% - 20px,1180px);padding-top:16px}.stage{min-height:480px}.drop{flex-direction:column;align-items:stretch}.actions,.prompt-row{display:flex;flex-direction:column}.drop button,.drop audio,.prompt-row button{width:100%}.status{display:none}}
   </style>
 </head>
 <body>
@@ -42,19 +44,78 @@
       <div class="foot">Calibration image generated with Livepeer Agent · FLUX Schnell · $0.0032</div>
     </aside>
   </section>
+  <section class="console" aria-labelledby="direct-title">
+    <div>
+      <h2 id="direct-title">Direct the translation</h2>
+      <p>The four labelled measures become a visual brief. Add one human direction, generate through Livepeer Agent, then change the direction and refine.</p>
+      <div class="prompt-row"><input id="direction" maxlength="240" value="an impossible glass organism, cinematic darkness, luminous cyan and magenta, no text" aria-label="Creative direction"><button id="generate" type="button">Generate facet</button></div>
+      <p class="loop-status" id="loop-status" role="status">Ready · calibration measures loaded</p>
+    </div>
+    <div class="receipt">
+      <h3>Generation receipt</h3>
+      <dl>
+        <dt>Engine</dt><dd id="receipt-engine">Livepeer Agent / flux-schnell</dd>
+        <dt>Input</dt><dd id="receipt-input">labelled measures + human direction</dd>
+        <dt>Attempt</dt><dd id="receipt-attempt">not generated yet</dd>
+        <dt>Output</dt><dd id="receipt-output">calibration image</dd>
+        <dt>Privacy</dt><dd class="verified">raw audio remains local</dd>
+      </dl>
+    </div>
+  </section>
 </main>
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
-  const prism = $('prism'), spectrum = $('spectrum'), drop = $('drop'), file = $('file'), player = $('player');
+  const prism = $('prism'), prismImage = prism.querySelector('img'), spectrum = $('spectrum'), drop = $('drop'), file = $('file'), player = $('player');
   const bars = Array.from({length:36}, () => { const i=document.createElement('i'); spectrum.appendChild(i); return i; });
   const labels = {pulse:$('pulse-label'),density:$('density-label'),brightness:$('brightness-label'),drift:$('drift-label')};
   const tracks = {pulse:$('pulse-track'),density:$('density-track'),brightness:$('brightness-track'),drift:$('drift-track')};
-  let ctx, analyser, source, frame, data;
+  let ctx, analyser, source, frame, data, attempt = 0;
+  let currentMeasures = {pulse:.32,density:.22,brightness:.76,drift:.64};
   const word = (v, kind) => kind==='drift' ? (v<.42?'right → left':v>.58?'left → right':'centered') : v<.3?'low':v<.68?'mid':'high';
   function render(m){
+    currentMeasures = {...m};
     Object.keys(tracks).forEach(k=>{ const v=Math.max(0,Math.min(1,m[k])); tracks[k].style.setProperty('--v',`${Math.round(v*100)}%`); labels[k].textContent=word(v,k); });
     prism.style.setProperty('--pulse',m.pulse); prism.style.setProperty('--bright',m.brightness); prism.style.setProperty('--drift',m.drift*2-1);
+  }
+  const shortValue = n => Math.round(Math.max(0,Math.min(1,n))*100)/100;
+  function buildPrompt(direction){
+    const m=currentMeasures;
+    return `Create one polished 16:9 abstract visual world translated from sound measurements. Pulse ${shortValue(m.pulse)}, density ${shortValue(m.density)}, brightness ${shortValue(m.brightness)}, stereo drift ${shortValue(m.drift)} where 0 is left and 1 is right. Encode pulse as repeated geometry, density as spatial complexity, brightness as luminance and material, and drift as directional composition. Human direction: ${direction}. Preserve the identity of Facets: an elegant forensic listening instrument, deep black field, crystalline dimensionality. No typography, labels, logos, UI, borders, or watermark.`;
+  }
+  async function mcpTool(name,args){
+    const response=await fetch('https://agent.livepeer.org/api/mcp',{method:'POST',headers:{'content-type':'application/json','accept':'application/json, text/event-stream'},body:JSON.stringify({jsonrpc:'2.0',id:crypto.randomUUID(),method:'tools/call',params:{name,arguments:args}})});
+    const text=await response.text();
+    if(!response.ok) throw new Error(`Livepeer returned ${response.status}`);
+    const payload=JSON.parse(text), result=payload.result||{};
+    if(payload.error||result.isError) throw new Error(result.content?.map(x=>x.text).filter(Boolean).join(' ')||payload.error?.message||'Livepeer generation failed');
+    return payload;
+  }
+  function outputUrl(payload){
+    const result=payload.result||{}, structured=result.structuredContent||{};
+    const direct=[structured.url,result.url,structured.output_url,structured.outputUrl].find(x=>typeof x==='string'&&x.startsWith('http'));
+    if(direct) return direct;
+    const haystack=[...(result.content||[]).map(x=>x.text||''),JSON.stringify(structured)].join('\n');
+    const urls=haystack.match(/https?:\/\/[^"'\s)\\]+/g)||[];
+    return urls.find(x=>/\.(?:png|jpe?g|webp|gif)(?:\?|$)/i.test(x))?.replace(/[.,]+$/,'')||urls.at(-1)?.replace(/[.,]+$/,'');
+  }
+  async function generateFacet(){
+    const button=$('generate'), status=$('loop-status'), direction=$('direction').value.trim();
+    if(!direction){$('direction').focus();return;}
+    const nextAttempt=attempt+1;
+    button.disabled=true; button.textContent='Generating…'; prism.classList.add('generating'); status.classList.remove('error'); status.textContent=`Attempt ${nextAttempt} · sending labelled measures to Livepeer Agent…`;
+    try{
+      const payload=await mcpTool('run_capability',{capability:'flux-schnell',prompt:buildPrompt(direction),timeout:40,async:false,persist:false,session_id:'facets_public_instrument',idempotency_key:`facets_${Date.now()}_${nextAttempt}`});
+      const url=outputUrl(payload); if(!url) throw new Error('Livepeer completed without an image URL');
+      await new Promise((resolve,reject)=>{const probe=new Image();probe.onload=resolve;probe.onerror=reject;probe.src=url});
+      attempt=nextAttempt; prismImage.src=url; prismImage.alt=`Facets translation attempt ${attempt}, generated from labelled audio measures`;
+      $('receipt-attempt').textContent=`#${attempt} · ${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;
+      $('receipt-output').innerHTML=`<a href="${url}" target="_blank" rel="noopener">Livepeer image ↗</a>`;
+      status.textContent=`Attempt ${attempt} returned · review it, change the direction, and refine again`;
+      button.textContent='Refine again';
+    }catch(error){
+      status.classList.add('error'); status.textContent=`Generation paused · ${String(error.message||error).slice(0,180)}`; button.textContent='Try again';
+    }finally{button.disabled=false;prism.classList.remove('generating')}
   }
   function animate(){
     analyser.getByteFrequencyData(data); const n=data.length; let low=0,mid=0,high=0,active=0;
@@ -81,6 +142,8 @@
     const start=performance.now(); cancelAnimationFrame(frame);
     const loop=(t)=>{const q=(t-start)/1000;const m={pulse:.28+.18*Math.max(0,Math.sin(q*3.1)),density:.22+.07*Math.sin(q*.7),brightness:.72+.12*Math.sin(q*1.2),drift:.5+.38*Math.sin(q*.35)};render(m);bars.forEach((b,i)=>b.style.setProperty('--h',Math.max(.08,.18+.4*Math.sin(q*2+i*.34)*Math.sin(i*.17))));frame=requestAnimationFrame(loop)};frame=requestAnimationFrame(loop);
   };
+  $('generate').onclick=generateFacet;
+  $('direction').addEventListener('keydown',e=>{if(e.key==='Enter')generateFacet()});
   const mc=document.modelContext;
   if(mc?.registerTool){
     const clamp=n=>Math.max(0,Math.min(1,Number(n)));
