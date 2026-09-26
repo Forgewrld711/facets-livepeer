@@ -4,6 +4,8 @@ Facets is a multimodal listening instrument that turns locally measured audio fe
 
 Raw audio stays in the browser. Only labelled measures and the user's creative direction are sent to Livepeer Agent.
 
+**[Try the public app](https://forgewrld711.github.io/facets-livepeer/) · [Watch the 30-second demo](https://forgewrld711.github.io/facets-livepeer/demo/facets-demo.mp4)**
+
 ## Hackathon track
 
 **Livepeer Agent Builder**
@@ -28,7 +30,7 @@ Then open `http://127.0.0.1:8000`.
 
 ## Demo
 
-The repository includes a short visual walkthrough at `demo/facets-demo.webm`.
+The 30-second [MP4 walkthrough](https://forgewrld711.github.io/facets-livepeer/demo/facets-demo.mp4) shows calibration measures, a Livepeer image-generation call, and a second call refining the same sound into a different visual direction. A WebM copy is also included in `demo/`.
 
 ## Privacy and scope
 

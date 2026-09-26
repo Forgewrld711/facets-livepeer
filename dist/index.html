@@ -110,7 +110,9 @@
       await new Promise((resolve,reject)=>{const probe=new Image();probe.onload=resolve;probe.onerror=reject;probe.src=url});
       attempt=nextAttempt; prismImage.src=url; prismImage.alt=`Facets translation attempt ${attempt}, generated from labelled audio measures`;
       $('receipt-attempt').textContent=`#${attempt} · ${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;
-      $('receipt-output').innerHTML=`<a href="${url}" target="_blank" rel="noopener">Livepeer image ↗</a>`;
+      const output=$('receipt-output'), link=document.createElement('a');
+      link.href=url; link.target='_blank'; link.rel='noopener noreferrer'; link.textContent='Livepeer image ↗';
+      output.replaceChildren(link);
       status.textContent=`Attempt ${attempt} returned · review it, change the direction, and refine again`;
       button.textContent='Refine again';
     }catch(error){
