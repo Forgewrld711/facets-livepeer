@@ -13,7 +13,7 @@ const { chromium } = require('playwright');
     },
   });
   const page = await context.newPage();
-  await page.goto('http://127.0.0.1:8042', { waitUntil: 'networkidle' });
+  await page.goto('http://127.0.0.1:8042/?v=creative', { waitUntil: 'networkidle' });
   await page.waitForTimeout(1600);
   await page.getByRole('button', { name: 'Play calibration' }).click();
   await page.waitForTimeout(2600);

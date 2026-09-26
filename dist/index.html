@@ -47,15 +47,16 @@
   <section class="console" aria-labelledby="direct-title">
     <div>
       <h2 id="direct-title">Direct the translation</h2>
-      <p>The four labelled measures become a visual brief. Add one human direction, generate through Livepeer Agent, then change the direction and refine.</p>
+      <p>The four labelled measures become a visual brief. Add one human direction, preview the price, generate through Livepeer Creative MCP, then refine.</p>
       <div class="prompt-row"><input id="direction" maxlength="240" value="an impossible glass organism, cinematic darkness, luminous cyan and magenta, no text" aria-label="Creative direction"><button id="generate" type="button">Generate facet</button></div>
       <p class="loop-status" id="loop-status" role="status">Ready · calibration measures loaded</p>
     </div>
     <div class="receipt">
       <h3>Generation receipt</h3>
       <dl>
-        <dt>Engine</dt><dd id="receipt-engine">Livepeer Agent / flux-schnell</dd>
+        <dt>Engine</dt><dd id="receipt-engine">Livepeer Creative MCP / flux-schnell</dd>
         <dt>Input</dt><dd id="receipt-input">labelled measures + human direction</dd>
+        <dt>Cost</dt><dd id="receipt-cost">quoted before generation</dd>
         <dt>Attempt</dt><dd id="receipt-attempt">not generated yet</dd>
         <dt>Output</dt><dd id="receipt-output">calibration image</dd>
         <dt>Privacy</dt><dd class="verified">raw audio remains local</dd>
@@ -84,7 +85,7 @@
     return `Create one polished 16:9 abstract visual world translated from sound measurements. Pulse ${shortValue(m.pulse)}, density ${shortValue(m.density)}, brightness ${shortValue(m.brightness)}, stereo drift ${shortValue(m.drift)} where 0 is left and 1 is right. Encode pulse as repeated geometry, density as spatial complexity, brightness as luminance and material, and drift as directional composition. Human direction: ${direction}. Preserve the identity of Facets: an elegant forensic listening instrument, deep black field, crystalline dimensionality. No typography, labels, logos, UI, borders, or watermark.`;
   }
   async function mcpTool(name,args){
-    const response=await fetch('https://agent.livepeer.org/api/mcp',{method:'POST',headers:{'content-type':'application/json','accept':'application/json, text/event-stream'},body:JSON.stringify({jsonrpc:'2.0',id:crypto.randomUUID(),method:'tools/call',params:{name,arguments:args}})});
+    const response=await fetch('https://agent.livepeer.org/api/mcp/creative',{method:'POST',headers:{'content-type':'application/json','accept':'application/json, text/event-stream'},body:JSON.stringify({jsonrpc:'2.0',id:crypto.randomUUID(),method:'tools/call',params:{name,arguments:args}})});
     const text=await response.text();
     if(!response.ok) throw new Error(`Livepeer returned ${response.status}`);
     const payload=JSON.parse(text), result=payload.result||{};
@@ -103,13 +104,19 @@
     const button=$('generate'), status=$('loop-status'), direction=$('direction').value.trim();
     if(!direction){$('direction').focus();return;}
     const nextAttempt=attempt+1;
-    button.disabled=true; button.textContent='Generating…'; prism.classList.add('generating'); status.classList.remove('error'); status.textContent=`Attempt ${nextAttempt} · sending labelled measures to Livepeer Agent…`;
+    button.disabled=true; button.textContent='Generating…'; prism.classList.add('generating'); status.classList.remove('error'); status.textContent=`Attempt ${nextAttempt} · checking Livepeer Creative MCP price…`;
     try{
-      const payload=await mcpTool('run_capability',{capability:'flux-schnell',prompt:buildPrompt(direction),timeout:40,async:false,persist:false,session_id:'facets_public_instrument',idempotency_key:`facets_${Date.now()}_${nextAttempt}`});
+      const quote=await mcpTool('get_pricing',{name:'flux-schnell'});
+      const rate=Number(quote.result?.structuredContent?.capabilities?.[0]?.display_price_usd);
+      if(!Number.isFinite(rate)||rate<=0) throw new Error('Livepeer price preview unavailable');
+      status.textContent=`Attempt ${nextAttempt} · estimated $${rate.toFixed(4)} per megapixel · $0.02 cap · generating…`;
+      const payload=await mcpTool('create_media',{action:'generate',prompt:buildPrompt(direction),model_override:'flux-schnell',aspect_ratio:'16:9',async:false,persist:false,max_cost_usd:0.02,session_id:'facets_public_instrument',idempotency_key:`facets_${Date.now()}_${nextAttempt}`});
       const url=outputUrl(payload); if(!url) throw new Error('Livepeer completed without an image URL');
       await new Promise((resolve,reject)=>{const probe=new Image();probe.onload=resolve;probe.onerror=reject;probe.src=url});
       attempt=nextAttempt; prismImage.src=url; prismImage.alt=`Facets translation attempt ${attempt}, generated from labelled audio measures`;
       $('receipt-attempt').textContent=`#${attempt} · ${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;
+      const cost=Number(payload.result?.structuredContent?.cost_usd_estimated);
+      $('receipt-cost').textContent=Number.isFinite(cost)?`~$${cost.toFixed(4)} estimated`:`$${rate.toFixed(4)} per megapixel quoted`;
       const output=$('receipt-output'), link=document.createElement('a');
       link.href=url; link.target='_blank'; link.rel='noopener noreferrer'; link.textContent='Livepeer image ↗';
       output.replaceChildren(link);
